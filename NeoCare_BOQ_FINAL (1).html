@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NeoCare - جدول حصر الكميات والمقايسة التقديرية</title>
+<style>
+  body{
+    font-family: Tahoma, Arial, sans-serif;
+    background:#f5f7fa;
+    color:#1f2937;
+    margin:0;
+    padding:24px;
+    line-height:1.6;
+  }
+  .container{
+    max-width:1400px;
+    margin:auto;
+    background:#fff;
+    padding:24px;
+    border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+  }
+  .header-actions{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  h1{
+    margin:0;
+    color:#17395c;
+    font-size:28px;
+  }
+  .print-btn {
+    background: #17395c;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .print-btn:hover {
+    background: #0d233a;
+  }
+  .subtitle{
+    color:#5b6573;
+    margin-bottom:18px;
+  }
+  .note{
+    background:#fff8e6;
+    border:1px solid #f2d28b;
+    padding:12px 14px;
+    border-radius:10px;
+    margin:12px 0 18px;
+  }
+  .section-title{
+    background:#17395c;
+    color:#fff;
+    padding:10px 14px;
+    border-radius:8px 8px 0 0;
+    margin-top:24px;
+    font-size:18px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+    margin-bottom: 10px;
+  }
+  th, td{
+    border:1px solid #ccd3dc;
+    padding:8px 7px;
+    vertical-align:middle;
+  }
+  th{
+    background:#dce8f3;
+    color:#17395c;
+    font-weight:700;
+    text-align:center;
+  }
+  td.num{
+    text-align:center;
+    white-space:nowrap;
+  }
+  td.price{
+    text-align:center;
+    background:#fffdf2;
+    min-width:90px;
+  }
+  input.price-input, input.qty-input {
+    width: 80px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  input.price-input:focus, input.qty-input:focus {
+    border-color: #17395c;
+    outline: none;
+    background: #eef5fc;
+  }
+  .status-confirmed{
+    color:#0b6b38;
+    font-weight:700;
+  }
+  .status-review{
+    color:#a15c00;
+    font-weight:700;
+  }
+  .total-row td{
+    background:#eaf4ea;
+    font-weight:700;
+  }
+  .summary-table th {
+    background: #2a52be;
+    color: #fff;
+  }
+  .footnotes{
+    margin-top:20px;
+    padding:14px;
+    background:#f2f5f8;
+    border-radius:10px;
+  }
+  .footnotes ul{
+    margin:8px 20px 0 0;
+  }
+  @media print{
+    body{background:#fff;padding:0}
+    .container{box-shadow:none;max-width:none}
+    .print-btn {display: none;}
+    input.price-input, input.qty-input {
+      border: none;
+      background: transparent;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-actions">
+    <h1>NeoCare – جدول حصر الكميات والمقايسة التقديرية</h1>
+    <button class="print-btn" onclick="window.print()">طباعة / حفظ كـ PDF</button>
+  </div>
+  <div class="subtitle">أعمال التشطيبات وما بعد اللياسة – نسخة مراجعة وتسعير تفاعلية</div>
+
+  <div class="note">
+    <strong>أساس الحصر:</strong>
+    المشروع عبارة عن دورين فقط مع ميزانين/جزء علوي.
+    ارتفاع الحوائط العادية بالحصر = 3.20 م، وحائط الاستقبال Double Height = 6.40 م.
+    العملة المعتمدة في هذه النسخة: <strong>ريال سعودي (SAR / ر.س)</strong>.
+  </div>
+
+  <div class="section-title">جدول حصر الكميات والأسعار التفصيلي</div>
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th>بند</th>
+        <th>الدور</th>
+        <th>المكان / الغرفة</th>
+        <th>الفئة</th>
+        <th>الوصف / بيان الأعمال</th>
+        <th>المواصفات والتشطيب</th>
+        <th>الوحدة</th>
+        <th>الكمية الصافية</th>
+        <th>نسبة الهالك</th>
+        <th>كمية التوريد</th>
+        <th>سعر الوحدة (ر.س)</th>
+        <th>الإجمالي (ر.س)</th>
+        <th>مرجع اللوحة / الرندر</th>
+        <th>الحالة / الملاحظات</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-id="1.01">
+        <td class="num">1.01</td>
+        <td class="num">الكل</td>
+        <td>جميع المساحات: عيادات، استقبال، طرقات، خدمات، حمامات</td>
+        <td class="mat-name">أرضيات بورسلين موحدة للمشروع بالكامل (F-01)</td>
+        <td>توريد وتركيب أرضيات بورسلين موحدة للمشروع بالكامل (F-01)</td>
+        <td>بورسلين مط موحد عالي الجودة لجميع الفراغات</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">185.38</td>
+        <td class="num">10%</td>
+        <td class="num qty">203.92</td>
+        <td class="price"><input type="number" class="price-input" data-id="1.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 5، 12، 27</td>
+        <td><span class="status-confirmed">مؤكد</span> – تم توحيد نوع وخامة الأرضيات لكل الفراغات</td>
+      </tr>
+
+      <tr data-id="1.02">
+        <td class="num">1.02</td>
+        <td class="num">الكل</td>
+        <td>داير الحوائط بالكامل</td>
+        <td class="mat-name">وزرة ألومنيوم غاطسة (SK-01)</td>
+        <td>توريد وتركيب وزرة ألومنيوم غاطسة (SK-01)</td>
+        <td>ألومنيوم غامق على مستوى الحائط</td>
+        <td class="num unit">م.ط</td>
+        <td class="num net-qty">168.00</td>
+        <td class="num">5%</td>
+        <td class="num qty">176.40</td>
+        <td class="price"><input type="number" class="price-input" data-id="1.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 6، 7</td>
+        <td><span class="status-confirmed">مؤكد</span> – وزرة غاطسة موحدة</td>
+      </tr>
+
+      <tr data-id="2.01">
+        <td class="num">2.01</td>
+        <td class="num">الكل</td>
+        <td>جميع حوائط العيادات والاستقبال والطرقات والخدمات – ارتفاع 3.20 م</td>
+        <td class="mat-name">دهانات حوائط بلاستيك موحدة (ارتفاع 3.20 م)</td>
+        <td>دهانات حوائط بلاستيك موحدة شامل المعجون والوجهين والطبقة التمهيدية</td>
+        <td>دهان بلاستيك أملس فاخر – نوع ولون موحد للحوائط</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">467.30</td>
+        <td class="num">5%</td>
+        <td class="num qty">490.67</td>
+        <td class="price"><input type="number" class="price-input" data-id="2.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 6، 12</td>
+        <td><span class="status-confirmed">مؤكد</span> – ارتفاع الحوائط 3.20 م</td>
+      </tr>
+
+      <tr data-id="2.02">
+        <td class="num">2.02</td>
+        <td class="num">الأرضي</td>
+        <td>الحائط الرئيسي بالاستقبال – Double Height بارتفاع 6.40 م</td>
+        <td class="mat-name">دهانات حوائط للارتفاع المزدوج (Double Height)</td>
+        <td>دهانات حوائط موحدة للارتفاع المزدوج</td>
+        <td>نفس نوع ولون دهان الحوائط الموحد</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">96.00</td>
+        <td class="num">5%</td>
+        <td class="num qty">100.80</td>
+        <td class="price"><input type="number" class="price-input" data-id="2.02" data-linked-price="2.01" placeholder="0" readonly title="نفس سعر دهان الحوائط الموحد"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 5، 9</td>
+        <td><span class="status-confirmed">مؤكد</span> – منطقة البهو المرتفع</td>
+      </tr>
+
+      <tr data-id="2.03">
+        <td class="num">2.03</td>
+        <td class="num">الكل</td>
+        <td>حوائط الحمامات</td>
+        <td class="mat-name">سيراميك / بورسلان حوائط الحمامات</td>
+        <td>سيراميك / بورسلان حوائط الحمامات</td>
+        <td>حسب التصميم والعينة المعتمدة</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">-</td>
+        <td class="num">-</td>
+        <td class="num qty"><input type="number" class="qty-input" data-id="2.03-qty" placeholder="أدخل الكمية"></td>
+        <td class="price"><input type="number" class="price-input" data-id="2.03" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">حسب المخطط</td>
+        <td><span class="status-review">يحسبها المهندس</span> – يتم حسابها بواسطة المهندس بعد مراجعة أبعاد الفتحات والحمامات.</td>
+      </tr>
+
+      <tr data-id="3.01">
+        <td class="num">3.01</td>
+        <td class="num">الكل</td>
+        <td>جميع أسقف الغرف والعيادات والخدمات</td>
+        <td class="mat-name">أسقف جبسوم بورد مستوية ومقاومة للرطوبة</td>
+        <td>توريد وتركيب أسقف جبسوم بورد مستوية ومقاومة للرطوبة</td>
+        <td>ألواح جبسوم بورد 12.5 مم جاهزة للدهان</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">146.71</td>
+        <td class="num">10%</td>
+        <td class="num qty">161.38</td>
+        <td class="price"><input type="number" class="price-input" data-id="3.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 10، 12</td>
+        <td><span class="status-confirmed">مؤكد</span> – سقف معلق مستوي</td>
+      </tr>
+
+      <tr data-id="3.02">
+        <td class="num">3.02</td>
+        <td class="num">الأرضي</td>
+        <td>سقف بهو الاستقبال المرتفع</td>
+        <td class="mat-name">جبسوم بورد للارتفاع المزدوج (Double Height)</td>
+        <td>توريد وتركيب جبسوم بورد للارتفاع المزدوج</td>
+        <td>جبسوم بورد شامل بيوت النور والتشكيل</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">38.67</td>
+        <td class="num">10%</td>
+        <td class="num qty">42.54</td>
+        <td class="price"><input type="number" class="price-input" data-id="3.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 10، 11</td>
+        <td><span class="status-confirmed">مؤكد</span> – سقف البهو المرتفع</td>
+      </tr>
+
+      <tr data-id="3.03">
+        <td class="num">3.03</td>
+        <td class="num">الكل</td>
+        <td>جميع الأسقف المعلقة بالكامل</td>
+        <td class="mat-name">دهانات أسقف موحدة</td>
+        <td>دهانات أسقف موحدة شامل المعجون والوجهين والتمهيدي</td>
+        <td>دهان أسقف موحد – نوع ولون خاص بالأسقف يختلف عن الحوائط</td>
+        <td class="num unit">م²</td>
+        <td class="num net-qty">185.38</td>
+        <td class="num">5%</td>
+        <td class="num qty">194.65</td>
+        <td class="price"><input type="number" class="price-input" data-id="3.03" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 10، 12</td>
+        <td><span class="status-confirmed">مؤكد</span> – خامة ولون مستقلان للأسقف</td>
+      </tr>
+
+      <tr data-id="4.01">
+        <td class="num">4.01</td>
+        <td class="num">الكل</td>
+        <td>مسارات إضاءة الأسقف</td>
+        <td class="mat-name">مجرى إضاءة مغناطيسي غاطس (Magnetic Track)</td>
+        <td>مجرى إضاءة مغناطيسي غاطس (Magnetic Track)</td>
+        <td>مجاري ألومنيوم سوداء غاطسة بالجبس</td>
+        <td class="num unit">م.ط</td>
+        <td class="num net-qty">84.00</td>
+        <td class="num">0%</td>
+        <td class="num qty">84.00</td>
+        <td class="price"><input type="number" class="price-input" data-id="4.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 10، 12</td>
+        <td><span class="status-confirmed">مؤكد</span> – شامل الملحقات والتوصيلات</td>
+      </tr>
+
+      <tr data-id="4.02">
+        <td class="num">4.02</td>
+        <td class="num">الأرضي</td>
+        <td>منطقة الاستقبال المرتفعة</td>
+        <td class="mat-name">نجفة معلقة ديكورية للبهو المرتفع (M-01)</td>
+        <td>نجفة معلقة ديكورية للبهو المرتفع (M-01)</td>
+        <td>وحدة إضاءة معلقة مودرن رئيسية</td>
+        <td class="num unit">طقم</td>
+        <td class="num net-qty">1</td>
+        <td class="num">0%</td>
+        <td class="num qty">1</td>
+        <td class="price"><input type="number" class="price-input" data-id="4.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 10، 11</td>
+        <td><span class="status-confirmed">مؤكد</span> – حسب العينة المعتمدة</td>
+      </tr>
+
+      <tr data-id="5.01">
+        <td class="num">5.01</td>
+        <td class="num">الأرضي</td>
+        <td>منطقة الاستقبال</td>
+        <td class="mat-name">كونتر الاستقبال الرئيسي</td>
+        <td>كونتر الاستقبال الرئيسي شامل الإضاءة والرخام</td>
+        <td>MDF مع رخام صناعي وشريط LED</td>
+        <td class="num unit">عدد</td>
+        <td class="num net-qty">1</td>
+        <td class="num">0%</td>
+        <td class="num qty">1</td>
+        <td class="price"><input type="number" class="price-input" data-id="5.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 5، 8</td>
+        <td><span class="status-review">تقريبي</span> – المقاسات تعتمد من الرسومات التنفيذية</td>
+      </tr>
+
+      <tr data-id="5.02">
+        <td class="num">5.02</td>
+        <td class="num">الكل</td>
+        <td>عيادات الأسنان 1 إلى 6</td>
+        <td class="mat-name">كبائن عيادات الأسنان السفلية</td>
+        <td>وحدات أدراج وكبائن عيادات الأسنان السفلية</td>
+        <td>MDF مع قشرة مقاومة وسطح رخام وحوض</td>
+        <td class="num unit">طقم</td>
+        <td class="num net-qty">6</td>
+        <td class="num">0%</td>
+        <td class="num qty">6</td>
+        <td class="price"><input type="number" class="price-input" data-id="5.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 12، 17</td>
+        <td><span class="status-confirmed">مؤكد</span> – كبينة لكل عيادة</td>
+      </tr>
+
+      <tr data-id="6.01">
+        <td class="num">6.01</td>
+        <td class="num">الكل</td>
+        <td>أبواب العيادات والغرف والخدمات</td>
+        <td class="mat-name">أبواب خشبية بحلق مخفي</td>
+        <td>أبواب خشبية تجليد قشرة/دهان مع حلق مخفي</td>
+        <td>شامل المقابض والمفصلات والكالون والتشطيب</td>
+        <td class="num unit">باب</td>
+        <td class="num net-qty">11</td>
+        <td class="num">0%</td>
+        <td class="num qty">11</td>
+        <td class="price"><input type="number" class="price-input" data-id="6.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 7، 13</td>
+        <td><span class="status-confirmed">مؤكد</span> – أبواب غرف عادية</td>
+      </tr>
+
+      <tr data-id="6.02">
+        <td class="num">6.02</td>
+        <td class="num">الأرضي</td>
+        <td>غرفة الأشعة X-Ray وغرفة التحكم</td>
+        <td class="mat-name">أبواب مبطنة بالرصاص مخصصة للأشعة</td>
+        <td>أبواب مبطنة بالرصاص مخصصة للأشعة</td>
+        <td>تجليد رصاص مخصص لمنع التسرب الإشعاعي</td>
+        <td class="num unit">باب</td>
+        <td class="num net-qty">2</td>
+        <td class="num">0%</td>
+        <td class="num qty">2</td>
+        <td class="price"><input type="number" class="price-input" data-id="6.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">لوحة السباكة</td>
+        <td><span class="status-review">يحتاج مراجعة</span> – حسب متطلبات الوقاية الإشعاعية</td>
+      </tr>
+
+      <tr data-id="7.01">
+        <td class="num">7.01</td>
+        <td class="num">الكل</td>
+        <td>الحمامات</td>
+        <td class="mat-name">طقم تواليت معلق مخفي</td>
+        <td>طقم تواليت معلق بالكامل مع صندوق طرد مخفي</td>
+        <td>بورسلين أبيض عالي الجودة شامل الشطاف والملحقات</td>
+        <td class="num unit">طقم</td>
+        <td class="num net-qty">3</td>
+        <td class="num">0%</td>
+        <td class="num qty">3</td>
+        <td class="price"><input type="number" class="price-input" data-id="7.01" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">رندر ص 27، 29</td>
+        <td><span class="status-confirmed">مؤكد</span> – 3 حمامات</td>
+      </tr>
+
+      <tr data-id="7.02">
+        <td class="num">7.02</td>
+        <td class="num">الكل</td>
+        <td>عيادات الأسنان 1 إلى 6</td>
+        <td class="mat-name">نقاط تغذية وصرف كرسي الأسنان</td>
+        <td>نقاط تغذية وصرف كرسي الأسنان</td>
+        <td>مخرج مياه وصرف وشفط وهواء مضغوط</td>
+        <td class="num unit">نقطة</td>
+        <td class="num net-qty">6</td>
+        <td class="num">0%</td>
+        <td class="num qty">6</td>
+        <td class="price"><input type="number" class="price-input" data-id="7.02" placeholder="0"></td>
+        <td class="price total-item">0.00</td>
+        <td class="num">لوحات السباكة</td>
+        <td><span class="status-confirmed">مؤكد</span> – نقطة تأسيس لكل عيادة</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="11" style="text-align: left; padding-left: 20px;">المجموع الإجمالي التقديري للمشروع بالكامل:</td>
+        <td class="price" id="grandTotal">0.00</td>
+        <td colspan="2">ريال سعودي (SAR / ر.س)</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- 1. Material / Product Summary Table -->
+  <div class="section-title">ملخص المواد والمنتجات (Material / Product Summary)</div>
+  <table id="summaryTable" class="summary-table">
+    <thead>
+      <tr>
+        <th>بند (Item No.)</th>
+        <th>المادة / المنتج (Material / Product)</th>
+        <th>الوحدة (Unit)</th>
+        <th>إجمالي الكمية الصافية (Total Net Qty)</th>
+        <th>إجمالي كمية التوريد (Total Procurement Qty)</th>
+        <th>سعر الوحدة (SAR)</th>
+        <th>إجمالي تكلفة المادة (SAR)</th>
+      </tr>
+    </thead>
+    <tbody id="summaryTableBody">
+      <!-- Generated Dynamically via JS -->
+    </tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="6" style="text-align: left; padding-left: 20px;">إجمالي تكلفة جميع المواد والمشروع (GRAND TOTAL):</td>
+        <td class="price" id="summaryGrandTotal">0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footnotes">
+    <strong>ملاحظات مراجعة مهمة:</strong>
+    <ul>
+      <li>يمكنك كتابة أسعار المواد مباشرة في خانات "سعر الوحدة"، وسيتم حساب الإجمالي وتحديث ملخص المواد تلقائياً.</li>
+      <li>بند (2.03) الخاص بسيراميك حوائط الحمامات لا يدخل ضمن المجموع الكلي حتى يتم إدخال الكمية المعتمدة من المهندس.</li>
+      <li>العملة المعتمدة هي الريال السعودي (SAR / ر.س).</li>
+      <li>يتم حفظ الأسعار والكميات تلقائياً على نفس الجهاز والمتصفح.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const priceInputs = document.querySelectorAll(".price-input");
+    const qtyInputs = document.querySelectorAll(".qty-input");
+    const grandTotalEl = document.getElementById("grandTotal");
+    const summaryGrandTotalEl = document.getElementById("summaryGrandTotal");
+    const mainRows = document.querySelectorAll("#mainTable tbody tr");
+    const summaryBody = document.getElementById("summaryTableBody");
+
+    // Material groups used only in the final purchasing summary.
+    // Detailed BOQ rows remain separate so heights/locations are still clear.
+    const summaryGroups = [
+      { id: "1.01", items: ["1.01"], name: "أرضيات بورسلين موحدة للمشروع بالكامل (F-01)" },
+      { id: "1.02", items: ["1.02"], name: "وزرة ألومنيوم غاطسة (SK-01)" },
+      { id: "2.WALL", items: ["2.01", "2.02"], name: "دهانات الحوائط الموحدة" },
+      { id: "2.03", items: ["2.03"], name: "سيراميك / بورسلان حوائط الحمامات" },
+      { id: "3.01", items: ["3.01"], name: "أسقف جبسوم بورد مستوية ومقاومة للرطوبة" },
+      { id: "3.02", items: ["3.02"], name: "جبسوم بورد للارتفاع المزدوج (Double Height)" },
+      { id: "3.03", items: ["3.03"], name: "دهانات أسقف موحدة" },
+      { id: "4.01", items: ["4.01"], name: "مجرى إضاءة مغناطيسي غاطس (Magnetic Track)" },
+      { id: "4.02", items: ["4.02"], name: "نجفة معلقة ديكورية للبهو المرتفع (M-01)" },
+      { id: "5.01", items: ["5.01"], name: "كونتر الاستقبال الرئيسي" },
+      { id: "5.02", items: ["5.02"], name: "كبائن عيادات الأسنان السفلية" },
+      { id: "6.01", items: ["6.01"], name: "أبواب خشبية بحلق مخفي" },
+      { id: "6.02", items: ["6.02"], name: "أبواب مبطنة بالرصاص مخصصة للأشعة" },
+      { id: "7.01", items: ["7.01"], name: "طقم تواليت معلق مخفي" },
+      { id: "7.02", items: ["7.02"], name: "نقاط تغذية وصرف كرسي الأسنان" }
+    ];
+
+    function getRow(id) {
+      return document.querySelector(`#mainTable tbody tr[data-id="${id}"]`);
+    }
+
+    function getQty(row) {
+      const qtyInput = row.querySelector(".qty-input");
+      if (qtyInput) {
+        const v = parseFloat(qtyInput.value);
+        return Number.isFinite(v) && v > 0 ? v : null;
+      }
+      const qty = parseFloat(row.querySelector(".qty").textContent);
+      return Number.isFinite(qty) ? qty : 0;
+    }
+
+    function getNetQty(row) {
+      const v = parseFloat(row.querySelector(".net-qty").textContent);
+      return Number.isFinite(v) ? v : null;
+    }
+
+    function getPrice(row) {
+      const input = row.querySelector(".price-input");
+      const linkedId = input.dataset.linkedPrice;
+      if (linkedId) {
+        const source = getRow(linkedId).querySelector(".price-input");
+        input.value = source.value;
+      }
+      return parseFloat(input.value) || 0;
+    }
+
+    function formatNum(value) {
+      return value.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function buildSummaryTable() {
+      summaryBody.innerHTML = "";
+      summaryGroups.forEach(group => {
+        const firstRow = getRow(group.items[0]);
+        const unit = firstRow.querySelector(".unit").textContent;
+        const tr = document.createElement("tr");
+        tr.id = "sum-row-" + group.id;
+        tr.innerHTML = `
+          <td class="num">${group.items.join(" + ")}</td>
+          <td>${group.name}</td>
+          <td class="num">${unit}</td>
+          <td class="num sum-net-qty">-</td>
+          <td class="num sum-proc-qty">-</td>
+          <td class="num sum-unit-price">0.00</td>
+          <td class="price sum-total-price">0.00</td>
+        `;
+        summaryBody.appendChild(tr);
+      });
+    }
+
+    buildSummaryTable();
+
+    function calculateTotals() {
+      let grandTotal = 0;
+
+      // Detailed BOQ totals
+      mainRows.forEach(row => {
+        const priceInput = row.querySelector(".price-input");
+        const totalItemEl = row.querySelector(".total-item");
+        const qty = getQty(row);
+        const price = getPrice(row);
+        const itemTotal = qty === null ? 0 : qty * price;
+
+        totalItemEl.textContent = formatNum(itemTotal);
+        grandTotal += itemTotal;
+
+        // Save only directly editable prices.
+        if (priceInput.dataset.id && !priceInput.dataset.linkedPrice) {
+          localStorage.setItem("neocare_price_" + priceInput.dataset.id, priceInput.value);
+        }
+      });
+
+      // Dynamic quantities
+      qtyInputs.forEach(input => {
+        if (input.dataset.id) {
+          localStorage.setItem("neocare_qty_" + input.dataset.id, input.value);
+        }
+      });
+
+      // Grouped Material / Product Summary
+      summaryGroups.forEach(group => {
+        const rows = group.items.map(getRow);
+        const sumRow = document.getElementById("sum-row-" + group.id);
+
+        let netTotal = 0;
+        let hasNet = false;
+        let procurementTotal = 0;
+        let hasProcurement = false;
+        let groupTotal = 0;
+
+        rows.forEach(row => {
+          const net = getNetQty(row);
+          const qty = getQty(row);
+          const price = getPrice(row);
+
+          if (net !== null) {
+            netTotal += net;
+            hasNet = true;
+          }
+          if (qty !== null) {
+            procurementTotal += qty;
+            hasProcurement = true;
+            groupTotal += qty * price;
+          }
+        });
+
+        // Since grouped rows are the same product, show one linked unit price.
+        const unitPrice = getPrice(rows[0]);
+
+        sumRow.querySelector(".sum-net-qty").textContent =
+          hasNet ? formatNum(netTotal) : "-";
+        sumRow.querySelector(".sum-proc-qty").textContent =
+          hasProcurement ? formatNum(procurementTotal) : "-";
+        sumRow.querySelector(".sum-unit-price").textContent =
+          formatNum(unitPrice);
+        sumRow.querySelector(".sum-total-price").textContent =
+          formatNum(groupTotal);
+      });
+
+      const formattedGrandTotal = formatNum(grandTotal);
+      grandTotalEl.textContent = formattedGrandTotal;
+      summaryGrandTotalEl.textContent = formattedGrandTotal;
+    }
+
+    // Load saved prices
+    priceInputs.forEach(input => {
+      if (input.dataset.id && !input.dataset.linkedPrice) {
+        const savedVal = localStorage.getItem("neocare_price_" + input.dataset.id);
+        if (savedVal !== null) input.value = savedVal;
+      }
+      if (!input.dataset.linkedPrice) {
+        input.addEventListener("input", calculateTotals);
+      }
+    });
+
+    // Load saved dynamic quantities
+    qtyInputs.forEach(input => {
+      if (input.dataset.id) {
+        const savedVal = localStorage.getItem("neocare_qty_" + input.dataset.id);
+        if (savedVal !== null) input.value = savedVal;
+      }
+      input.addEventListener("input", calculateTotals);
+    });
+
+    calculateTotals();
+  });
+</script>
+</body>
+</html>
